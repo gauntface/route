@@ -1,5 +1,7 @@
 const chalk = require('chalk');
 
+/* eslint-disable no-console */
+
 class LogHelper {
   log(message) {
     console.log(chalk.dim('[Info]: ') + message);

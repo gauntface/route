@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Home automation and event router [Fork of http://route.io/]",
   "scripts": {
-    "lint": "eslint '.'",
+    "lint": "eslint '.' --ignore-path .gitignore",
     "test": "npm run lint && mocha"
   },
   "repository": {
