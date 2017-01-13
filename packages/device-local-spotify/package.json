@@ -1,0 +1,13 @@
+{
+  "name": "routoh-local-spotify",
+  "version": "0.0.0",
+  "description": "",
+  "main": "local-spotify.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+  }
+}

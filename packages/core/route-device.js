@@ -1,11 +1,14 @@
 const EventEmitter = require('events');
 
 class RouteDevice extends EventEmitter {
-  constructor(deviceId, name) {
+  constructor(id) {
     super();
 
-    this.deviceId = deviceId;
-    this.name = name;
+    if (!id || typeof id !== 'string' || id.length === 0) {
+      throw new Error('No ID passed to RouteDevice.');
+    }
+
+    this.id = id;
   }
 
   /**
@@ -13,7 +16,7 @@ class RouteDevice extends EventEmitter {
    * super.emit() as is.
    */
   emit(eventType, eventName, ...args) {
-    super.emit(eventType, `${this.deviceId}.${eventName}`, ...args);
+    super.emit(eventType, `${this.id}.${eventName}`, ...args);
   }
 }
 

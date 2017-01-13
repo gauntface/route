@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 
-const Clock = require('../devices/clock');
+const Clock = require('../clock');
 
 require('chai').should();
 
@@ -26,6 +26,7 @@ describe('Test Clock Device', function() {
   });
 
   it('should emit time', function() {
+    const clockIncrement = (60 * 1000);
     return new Promise((resolve, reject) => {
       const clock = new Clock();
       let numberOfEvents = 0;
@@ -40,11 +41,11 @@ describe('Test Clock Device', function() {
         if (numberOfEvents >= expectedEventNames.length) {
           resolve();
         } else {
-          sinonClock.tick(60 * 1000);
+          sinonClock.tick(clockIncrement);
         }
       });
       // Need to kick off the first event by moving time forward
-      sinonClock.tick(60 * 1000);
+      sinonClock.tick(clockIncrement);
     });
   });
 });

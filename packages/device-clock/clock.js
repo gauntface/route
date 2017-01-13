@@ -1,8 +1,11 @@
 const RouteDevice = require('../core/route-device');
 
 class Clock extends RouteDevice {
-  constructor(name) {
-    super('Clock', name);
+  constructor(id) {
+    if (!id) {
+      id = 'Clock';
+    }
+    super(id);
 
     // Interval is 60 seconds.
     this._interval = 60 * 1000;
@@ -27,10 +30,10 @@ class Clock extends RouteDevice {
       minutes = '0' + minutes.toString();
     }
 
-    const timeString = `${hours}${minutes}`;
-    this.emit('DeviceEvent', timeString);
-
     this._setTimeout();
+
+    const eventName = `${hours}${minutes}`;
+    this.emit('DeviceEvent', eventName);
   }
 
   _setTimeout() {
@@ -38,7 +41,6 @@ class Clock extends RouteDevice {
     const nextTime = new Date(new Date().getTime() + this._interval);
     nextTime.setSeconds(0);
     nextTime.setMilliseconds(0);
-
     setTimeout(() => {
       this._onIntervalTick();
     }, nextTime - new Date());

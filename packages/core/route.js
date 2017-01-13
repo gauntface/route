@@ -1,14 +1,14 @@
 const EventEmitter = require('events').EventEmitter;
 
 const RouteDevice = require('./route-device');
-const logHelper = require('../utils/log-helper');
+const logHelper = require('./log-helper');
 
 class Route extends EventEmitter {
   constructor(data = {}) {
     super();
 
     this._devices = {};
-    this._eventMap = {};
+    this._eventCmdMap = {};
     this._stateWatchers = {};
     this._debug = data.debug;
 
@@ -17,19 +17,15 @@ class Route extends EventEmitter {
 
   addDevice(newDevice) {
     if (!(newDevice instanceof RouteDevice)) {
-      const errorMsg = `A device which does not extend 'RouteDevice' was ` +
-        `added. '${JSON.stringify(newDevice)}'.`;
-      logHelper.error(errorMsg);
-      throw new Error(errorMsg);
+      throw new Error(`A device which does not extend 'RouteDevice' was ` +
+        `added. '${JSON.stringify(newDevice)}'.`);
     }
 
-    if (newDevice.name in this._devices) {
-      const errorMsg = `A device with name '${newDevice.name}' already exists.`;
-      logHelper.error(errorMsg);
-      throw new Error(errorMsg);
+    if (newDevice.id in this._devices) {
+      throw new Error(`A device with name '${newDevice.id}' already exists.`);
     }
 
-    this._devices[newDevice.name] = newDevice;
+    this._devices[newDevice.id] = newDevice;
 
     newDevice.on('DeviceEvent', this._handleEvent);
 
@@ -38,24 +34,20 @@ class Route extends EventEmitter {
     //   obj.initStateObserver(this, this.state);
     // }
   }
-  addEventAndTrigger(eventName, eventTrigger) {
-    this._map(eventName, eventTrigger);
-  }
-
-  addEventMap(map) {
-    Object.keys(map).forEach((initialEventName) => {
-      const eventTriggers = map[initialEventName];
-      this._map(initialEventName, eventTriggers);
-    });
-  }
-
-  _map(initialEvent, eventTriggers) {
-    if (!this._eventMap[initialEvent]) {
-      this._eventMap[initialEvent] = [];
+  addEventCommand(eventName, command) {
+    if (!this._eventCmdMap[eventName]) {
+      this._eventCmdMap[eventName] = [];
     }
 
-    this._eventMap[initialEvent] =
-      this._eventMap[initialEvent].concat(eventTriggers);
+    this._eventCmdMap[eventName] =
+      this._eventCmdMap[eventName].concat(command);
+  }
+
+  addEventCommandMap(map) {
+    Object.keys(map).forEach((eventName) => {
+      const commands = map[eventName];
+      this.addEventCommand(eventName, commands);
+    });
   }
 
   _handleEvent(eventName, ...args) {
@@ -73,7 +65,7 @@ class Route extends EventEmitter {
             `for '${eventName}'.`, err);
         }
       } else {
-        console.warn('What should be done with: ' + eventTrigger);
+        logHelper.warn('What should be done with: ' + eventTrigger);
       }
     });
   }
