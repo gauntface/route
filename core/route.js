@@ -11,6 +11,8 @@ class Route extends EventEmitter {
     this._eventMap = {};
     this._stateWatchers = {};
     this._debug = data.debug;
+
+    this._handleEvent = this._handleEvent.bind(this);
   }
 
   addDevice(newDevice) {
@@ -36,9 +38,44 @@ class Route extends EventEmitter {
     //   obj.initStateObserver(this, this.state);
     // }
   }
+  addEventAndTrigger(eventName, eventTrigger) {
+    this._map(eventName, eventTrigger);
+  }
 
-  _handleEvent() {
-    logHelper.log('Handle Event.');
+  addEventMap(map) {
+    Object.keys(map).forEach((initialEventName) => {
+      const eventTriggers = map[initialEventName];
+      this._map(initialEventName, eventTriggers);
+    });
+  }
+
+  _map(initialEvent, eventTriggers) {
+    if (!this._eventMap[initialEvent]) {
+      this._eventMap[initialEvent] = [];
+    }
+
+    this._eventMap[initialEvent] =
+      this._eventMap[initialEvent].concat(eventTriggers);
+  }
+
+  _handleEvent(eventName, ...args) {
+    if(!this._eventMap[eventName]) {
+      return;
+    }
+
+    const eventTriggers = this._eventMap[eventName];
+    eventTriggers.forEach((eventTrigger) => {
+      if (typeof eventTrigger === 'function') {
+        try {
+          eventTrigger();
+        } catch (err) {
+          logHelper.error(`Error occurred when calling function ` +
+            `for '${eventName}'.`, err);
+        }
+      } else {
+        console.warn('What should be done with: ' + eventTrigger);
+      }
+    });
   }
 }
 
