@@ -1,4 +1,0 @@
-{ 
-  "name" : "Spotify",
-  "main" : "./spotify.js"
-}

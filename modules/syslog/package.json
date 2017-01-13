@@ -1,4 +1,0 @@
-{ 
-  "name" : "Syslog",
-  "main" : "./syslog.js"
-}

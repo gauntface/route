@@ -1,4 +1,0 @@
-{ 
-  "name" : "IFTTT",
-  "main" : "./ifttt.js"
-}

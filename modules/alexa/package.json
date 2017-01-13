@@ -1,4 +1,0 @@
-{ 
-  "name" : "Alexa",
-  "main" : "./alexa.js"
-}

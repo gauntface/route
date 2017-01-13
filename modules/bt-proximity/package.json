@@ -1,7 +1,0 @@
-{ 
-  "name" : "BTProximity",
-  "main" : "./bt-proximity.js",
-  "dependencies" : {
-  	"pty.js" : ">= 0.2.2"
-  }
-}

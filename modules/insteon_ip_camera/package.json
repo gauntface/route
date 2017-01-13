@@ -1,4 +1,0 @@
-{ 
-  "name" : "InsteonIPCamera",
-  "main" : "./insteon_ip_camera.js"
-}
