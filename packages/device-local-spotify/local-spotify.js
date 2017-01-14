@@ -26,7 +26,7 @@ class LocalSpotify extends RouteDevice {
     });
   }
 
-  playPlaylist(playlistUrl) {
+  playPlaylist(playlistUrl, shouldShuffle = true) {
     playlistUrl = url.parse(playlistUrl);
     if(playlistUrl.host !== SPOTIFY_HOSTNAME) {
       return Promise.reject(new Error(`Expected playlist URL to have ` +
@@ -46,7 +46,9 @@ class LocalSpotify extends RouteDevice {
       return this._mopidy.tracklist.add({tracks: tracks});
     })
     .then(() => {
-      return this._mopidy.tracklist.shuffle();
+      if (shouldShuffle) {
+        return this._mopidy.tracklist.shuffle();
+      }
     })
     .then(() => {
       return this._mopidy.tracklist.getTlTracks();
