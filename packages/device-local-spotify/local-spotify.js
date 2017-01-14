@@ -1,5 +1,8 @@
 const Mopidy = require('mopidy');
+const url = require('url');
 const RouteDevice = require('../core/route-device');
+
+const SPOTIFY_HOSTNAME = 'play.spotify.com';
 
 /**
  * This makes use of the Mopidy service to play Spotify tracks.
@@ -23,13 +26,30 @@ class LocalSpotify extends RouteDevice {
     });
   }
 
-  play(uri) {
-    return this._mopidy.playlists.getPlaylists()
+  playPlaylist(playlistUrl) {
+    playlistUrl = url.parse(playlistUrl);
+    if(playlistUrl.host !== SPOTIFY_HOSTNAME) {
+      return Promise.reject(new Error(`Expected playlist URL to have ` +
+        `hostname '${SPOTIFY_HOSTNAME}' instead found: '${playlistUrl.host}'`));
+    }
+
+    const mopidyUri = `spotify${playlistUrl.path.replace(/\//g, ':')}`;
+    return this._mopidy.playlists.filter({uri: mopidyUri})
     .then((playlists) => {
+      if (playlists.length !== 1) {
+        throw new Error(`Unable to find desired playlist with uri: ` +
+          `'${mopidyUri}'`);
+      }
       return playlists[0].tracks;
     })
     .then((tracks) => {
       return this._mopidy.tracklist.add({tracks: tracks});
+    })
+    .then(() => {
+      return this._mopidy.tracklist.shuffle();
+    })
+    .then(() => {
+      return this._mopidy.tracklist.getTlTracks();
     })
     .then((tlTracks) => {
       return this._mopidy.playback.play({
@@ -43,58 +63,10 @@ class LocalSpotify extends RouteDevice {
     })
     .then(() => {
       return this._mopidy.playback.stop();
+    })
+    .catch((err) => {
+      console.error(err);
     });
-    /** var get = function (key, object) {
-      return object[key];
-    };
-
-    var printTypeAndName = function (model) {
-        console.log(model.__model__ + ": " + model.name);
-        // By returning the playlist, this function can be inserted
-        // anywhere a model with a name is piped in the chain.
-        return model;
-    };
-
-    var trackDesc = function (track) {
-        return track.name + " by " + track.artists[0].name +
-            " from " + track.album.name;
-    };
-
-    var printNowPlaying = function () {
-        // By returning any arguments we get, the function can be inserted
-        // anywhere in the chain.
-        var args = arguments;
-        return mopidy.playback.getCurrentTrack()
-            .then(function (track) {
-                console.log("Now playing:", trackDesc(track));
-                return args;
-            });
-    };
-
-    var queueAndPlay = function (playlistNum, trackNum) {
-        playlistNum = playlistNum || 0;
-        trackNum = trackNum || 0;
-        mopidy.playlists.getPlaylists()
-            // => list of Playlists
-            .fold(get, playlistNum)
-            // => Playlist
-            .then(printTypeAndName)
-            // => Playlist
-            .fold(get, 'tracks')
-            // => list of Tracks
-            .then(mopidy.tracklist.add)
-            // => list of TlTracks
-            .fold(get, trackNum)
-            // => TlTrack
-            .then(mopidy.playback.play)
-            // => null
-            .then(printNowPlaying)
-            // => null
-            .catch(console.error.bind(console))  // Handle errors here
-            // => null
-            .done();                       // ...or they'll be thrown here
-        };             // Connect to server
-        // mopidy.on(console.log.bind(console));  // Log all events**/
   }
 }
 
