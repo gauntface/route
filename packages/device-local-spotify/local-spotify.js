@@ -1,5 +1,6 @@
 const Mopidy = require('mopidy');
 const url = require('url');
+const spawn = require('child_process').spawn;
 const RouteDevice = require('../core/route-device');
 
 const SPOTIFY_HOSTNAME = 'play.spotify.com';
@@ -16,14 +17,27 @@ class LocalSpotify extends RouteDevice {
   }
 
   init() {
+    this._spawnMopidyService();
+
     return new Promise((resolve) => {
       this._mopidy = new Mopidy({
         callingConvention: 'by-position-or-by-name',
         webSocketUrl: 'ws://localhost:6680/mopidy/ws/',
+        console: {
+          log: () => {},
+          warn: () => {},
+          error: () => {},
+          info: () => {},
+          debug: () => {},
+        },
       });
 
       this._mopidy.on('state:online', resolve);
     });
+  }
+
+  _spawnMopidyService() {
+    this._mopidyServer = spawn('mopidy');
   }
 
   playPlaylist(playlistUrl, shouldShuffle = true) {
@@ -58,17 +72,22 @@ class LocalSpotify extends RouteDevice {
         tl_track: tlTracks[0],
       });
     })
-    .then(() => {
-      return new Promise((resolve) => {
-        setTimeout(resolve, 5000);
-      });
-    })
-    .then(() => {
-      return this._mopidy.playback.stop();
-    })
     .catch((err) => {
       console.error(err);
     });
+  }
+
+  stop() {
+    return this._mopidy.playback.stop()
+    .then(() => {
+      if (this._mopidyServer) {
+        this._mopidyServer.kill();
+      }
+    });
+  }
+
+  exit() {
+    return this.stop();
   }
 }
 

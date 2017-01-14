@@ -18,6 +18,10 @@ class RouteDevice extends EventEmitter {
   emit(eventType, eventName, ...args) {
     super.emit(eventType, `${this.id}.${eventName}`, ...args);
   }
+
+  exit() {
+    return Promise.resolve();
+  }
 }
 
 module.exports = RouteDevice;

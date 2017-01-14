@@ -15,6 +15,7 @@ class LogHelper {
     console.error(chalk.red('[Error]: ') + message);
     if (err) {
       console.error(chalk.red(err));
+      console.error(chalk.red(err.stack));
     }
   }
 }

@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 
+const exitLifecycle = require('./exit-lifecycle');
 const RouteDevice = require('./route-device');
 const logHelper = require('./log-helper');
 
@@ -13,6 +14,14 @@ class Route extends EventEmitter {
     this._debug = data.debug;
 
     this._handleEvent = this._handleEvent.bind(this);
+
+    exitLifecycle.addEventListener('exit', () => {
+      const deviceExitPromises = Object.values(this._devices).map((device) => {
+        return device.exit().then(() => {}, () => {});
+      });
+
+      return Promise.all(deviceExitPromises);
+    });
   }
 
   addDevice(newDevice) {
@@ -51,11 +60,11 @@ class Route extends EventEmitter {
   }
 
   _handleEvent(eventName, ...args) {
-    if(!this._eventMap[eventName]) {
+    if(!this._eventCmdMap[eventName]) {
       return;
     }
 
-    const eventTriggers = this._eventMap[eventName];
+    const eventTriggers = this._eventCmdMap[eventName];
     eventTriggers.forEach((eventTrigger) => {
       if (typeof eventTrigger === 'function') {
         try {
