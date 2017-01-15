@@ -1,4 +1,4 @@
-const RouteDevice = require('../core/route-device');
+const RouteDevice = require('routoh/route-device');
 
 class Clock extends RouteDevice {
   constructor(id) {

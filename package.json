@@ -4,7 +4,8 @@
   "description": "Home automation and event router [Fork of http://route.io/]",
   "scripts": {
     "lint": "eslint '.' --ignore-path .gitignore",
-    "test": "npm run lint && mocha ./packages/**/test/*.js"
+    "test": "npm run lint && mocha ./packages/**/test/*.js",
+    "publish-release": "npm run test && lerna publish"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,11 @@
     "chalk": "^1.1.3",
     "eslint": "^3.13.1",
     "eslint-config-google": "^0.7.1",
-    "sinon": "^1.17.7"
+    "sinon": "^1.17.7",
+    "lerna": "2.0.0-beta.32"
+  },
+  "dependencies": {
+    "routoh": "0.0.1",
+    "routoh-local-spotify": "0.0.1"
   }
 }

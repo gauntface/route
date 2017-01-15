@@ -1,7 +1,7 @@
 const Mopidy = require('mopidy');
 const url = require('url');
 const spawn = require('child_process').spawn;
-const RouteDevice = require('../core/route-device');
+const RouteDevice = require('routoh/route-device');
 
 const SPOTIFY_HOSTNAME = 'play.spotify.com';
 
