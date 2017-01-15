@@ -1,6 +1,6 @@
 {
   "name": "routoh",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "./route.js",
   "files": [
     "route.js",
