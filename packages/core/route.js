@@ -15,6 +15,8 @@ class Route extends EventEmitter {
 
     this._handleEvent = this._handleEvent.bind(this);
 
+    this.logHelper = logHelper;
+
     exitLifecycle.addEventListener('exit', () => {
       const deviceExitPromises = Object.values(this._devices).map((device) => {
         return device.exit().then(() => {}, () => {});

@@ -18,6 +18,7 @@ describe('Test Clock Device', function() {
   });
 
   afterEach(() => {
+    sinonClock.restore();
     sandbox.restore();
   });
 

@@ -14,13 +14,19 @@ class LocalSpotify extends RouteDevice {
       id = 'LocalSpotify';
     }
     super(id);
+
+    this._init();
   }
 
-  init() {
-    this._spawnMopidyService();
+  _init() {
+    if (this._ready) {
+      return;
+    }
 
-    return new Promise((resolve) => {
-      this._mopidy = new Mopidy({
+    this._ready = new Promise((resolve) => {
+      this._spawnMopidyService();
+
+      const mopidy = new Mopidy({
         callingConvention: 'by-position-or-by-name',
         webSocketUrl: 'ws://localhost:6680/mopidy/ws/',
         console: {
@@ -32,12 +38,24 @@ class LocalSpotify extends RouteDevice {
         },
       });
 
-      this._mopidy.on('state:online', resolve);
+      mopidy.on((eventName) => {
+        switch(eventName) {
+          case 'websocket:incomingMessage':
+          case 'websocket:outgoingMessage':
+            return;
+          default:
+            /* eslint-disable no-console */
+            this.logHelper.log(`Mopidy: ${eventName}`);
+            /* eslint-enable no-console */
+            break;
+        }
+      });
+      mopidy.on('state:online', () => resolve(mopidy));
     });
   }
 
   _spawnMopidyService() {
-    this._mopidyServer = spawn('mopidy');
+    this._mopidyService = spawn('mopidy');
   }
 
   playPlaylist(playlistUrl, shouldShuffle = true) {
@@ -47,42 +65,43 @@ class LocalSpotify extends RouteDevice {
         `hostname '${SPOTIFY_HOSTNAME}' instead found: '${playlistUrl.host}'`));
     }
 
-    const mopidyUri = `spotify${playlistUrl.path.replace(/\//g, ':')}`;
-    return this._mopidy.playlists.filter({uri: mopidyUri})
-    .then((playlists) => {
-      if (playlists.length !== 1) {
-        throw new Error(`Unable to find desired playlist with uri: ` +
-          `'${mopidyUri}'`);
-      }
-      return playlists[0].tracks;
-    })
-    .then((tracks) => {
-      return this._mopidy.tracklist.add({tracks: tracks});
-    })
-    .then(() => {
-      if (shouldShuffle) {
-        return this._mopidy.tracklist.shuffle();
-      }
-    })
-    .then(() => {
-      return this._mopidy.tracklist.getTlTracks();
-    })
-    .then((tlTracks) => {
-      return this._mopidy.playback.play({
-        tl_track: tlTracks[0],
+    return this._ready.then((mopidyInstance) => {
+      const mopidyUri = `spotify${playlistUrl.path.replace(/\//g, ':')}`;
+      return mopidyInstance.playlists.filter({uri: mopidyUri})
+      .then((playlists) => {
+        if (playlists.length !== 1) {
+          throw new Error(`Unable to find desired playlist with uri: ` +
+            `'${mopidyUri}'`);
+        }
+        return playlists[0].tracks;
+      })
+      .then((tracks) => {
+        return mopidyInstance.tracklist.add({tracks: tracks});
+      })
+      .then(() => {
+        if (shouldShuffle) {
+          return mopidyInstance.tracklist.shuffle();
+        }
+      })
+      .then(() => {
+        return mopidyInstance.tracklist.getTlTracks();
+      })
+      .then((tlTracks) => {
+        return mopidyInstance.playback.play({
+          tl_track: tlTracks[0],
+        });
       });
-    })
-    .catch((err) => {
-      console.error(err);
     });
   }
 
   stop() {
-    return this._mopidy.playback.stop()
-    .then(() => {
-      if (this._mopidyServer) {
-        this._mopidyServer.kill();
-      }
+    return this._ready.then((mopidyInstance) => {
+      return mopidyInstance.playback.stop()
+      .then(() => {
+        if (this._mopidyService) {
+          this._mopidyService.kill();
+        }
+      });
     });
   }
 

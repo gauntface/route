@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const logHelper = require('./log-helper');
 
 class RouteDevice extends EventEmitter {
   constructor(id) {
@@ -8,6 +9,7 @@ class RouteDevice extends EventEmitter {
       throw new Error('No ID passed to RouteDevice.');
     }
 
+    this.logHelper = logHelper;
     this.id = id;
   }
 
