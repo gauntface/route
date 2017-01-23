@@ -1,6 +1,6 @@
 {
   "name": "routoh-device-bluetooth-proximity",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "",
   "main": "bluetooth-proximity.js",
   "scripts": {
@@ -11,6 +11,6 @@
   "dependencies": {
     "bluetooth-scanner": "^1.0.1",
     "noble": "^1.7.0",
-    "routoh": "^0.0.8"
+    "routoh": "^0.0.12"
   }
 }

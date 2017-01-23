@@ -1,6 +1,6 @@
 {
   "name": "routoh",
-  "version": "0.0.8",
+  "version": "0.0.12",
   "main": "./route.js",
   "description": "Route links events and commands on your network-aware devices.",
   "homepage": "http://route.io/",
