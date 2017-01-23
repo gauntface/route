@@ -19,7 +19,10 @@ class Route extends EventEmitter {
 
     exitLifecycle.addEventListener('exit', () => {
       const deviceExitPromises = Object.values(this._devices).map((device) => {
-        return device.exit().then(() => {}, () => {});
+        const promiseChain = device.exit();
+        if (promiseChain) {
+          return promiseChain.then(() => {}, () => {});
+        }
       });
 
       return Promise.all(deviceExitPromises);
