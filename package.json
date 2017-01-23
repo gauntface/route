@@ -25,7 +25,5 @@
   },
   "dependencies": {
     "proxyquire": "^1.7.10",
-    "routoh": "0.0.1",
-    "routoh-local-spotify": "0.0.1"
   }
 }
