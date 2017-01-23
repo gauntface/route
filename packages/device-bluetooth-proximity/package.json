@@ -1,0 +1,16 @@
+{
+  "name": "routoh-device-bluetooth-snooper",
+  "version": "0.0.8",
+  "description": "",
+  "main": "bluetooth-snooper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bluetooth-scanner": "^1.0.1",
+    "noble": "^1.7.0",
+    "routoh": "^0.0.8"
+  }
+}
