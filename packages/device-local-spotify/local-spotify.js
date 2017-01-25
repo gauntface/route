@@ -9,7 +9,7 @@ const SPOTIFY_HOSTNAME = 'play.spotify.com';
  * This makes use of the Mopidy service to play Spotify tracks.
  */
 class LocalSpotify extends RouteDevice {
-  constructor(id) {
+  constructor({id} = {}) {
     if (!id) {
       id = 'LocalSpotify';
     }

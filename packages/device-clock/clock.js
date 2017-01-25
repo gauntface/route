@@ -1,7 +1,7 @@
 const RouteDevice = require('routoh/route-device');
 
 class Clock extends RouteDevice {
-  constructor(id) {
+  constructor({id} = {}) {
     if (!id) {
       id = 'Clock';
     }
