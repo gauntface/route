@@ -1,4 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
+const url = require('url');
 
 const exitLifecycle = require('./exit-lifecycle');
 const RouteDevice = require('./route-device');
@@ -71,15 +72,37 @@ class Route extends EventEmitter {
 
     const eventTriggers = this._eventCmdMap[eventName];
     eventTriggers.forEach((eventTrigger) => {
-      if (typeof eventTrigger === 'function') {
-        try {
-          eventTrigger();
-        } catch (err) {
-          logHelper.error(`Error occurred when calling function ` +
-            `for '${eventName}'.`, err);
+      switch(typeof eventTrigger) {
+        case 'function':
+          try {
+            eventTrigger();
+          } catch (err) {
+            logHelper.error(`Error occurred when calling function ` +
+              `for '${eventName}'.`, err);
+          }
+          break;
+        case 'string': {
+          const eventTriggerParts = eventTrigger.split('.');
+          if (eventTriggerParts.length < 2) {
+            this.logHelper.warn(`Unexpected & unhandled event: ` +
+              `'${eventTrigger}'`);
+            return;
+          }
+
+          const deviceName = eventTriggerParts[0];
+          const command = eventTriggerParts.splice(1).join('.');
+
+          if (!this._devices[deviceName]) {
+            this.logHelper.warn(`Device does not exist: ${deviceName}`);
+            return;
+          }
+
+          this._devices[deviceName].emit(command);
+          break;
         }
-      } else {
-        logHelper.warn('What should be done with: ' + eventTrigger);
+        default:
+          logHelper.error('Unable to do anything with : ' + eventTrigger);
+          break;
       }
     });
   }

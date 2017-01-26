@@ -33,16 +33,48 @@ describe('Test Route Class', function() {
     }).to.throw('already exists');
   });
 
-  it('should be able to a single event command', function() {
+  it('should be able to add an event - command pair (Command as Function)', function() {
+    let callbackTriggered = false;
     const callback = () => {
-      console.log('Command Function');
+      callbackTriggered = true;
     };
-    const name = 'Hello';
+    const name = 'Test.Event';
     const route = new Route();
     route.addEventCommand(name, callback);
 
     Object.keys(route._eventCmdMap).length.should.equal(1);
     route._eventCmdMap[name].length.should.equal(1);
+
+    const testDevice = new RouteDevice('Test');
+    route.addDevice(testDevice);
+    testDevice.emit('DeviceEvent', 'Event');
+
+    callbackTriggered.should.equal(true);
+  });
+
+  it('should be able to add an event - command pair (Command as String)', function() {
+    const name = 'Device1.TestEvent';
+    const command = 'Device2.TestCommand';
+    const route = new Route();
+    route.addEventCommand(name, command);
+
+    Object.keys(route._eventCmdMap).length.should.equal(1);
+    route._eventCmdMap[name].length.should.equal(1);
+
+    const testDevice1 = new RouteDevice('Device1');
+    const testDevice2 = new RouteDevice('Device2');
+
+    let testCommandFired = false;
+    testDevice2.on('TestCommand', () => {
+      testCommandFired = true;
+    });
+
+    route.addDevice(testDevice1);
+    route.addDevice(testDevice2);
+
+    testDevice1.emit('DeviceEvent', 'TestEvent');
+
+    testCommandFired.should.equal(true);
   });
 
   it('should be able to a event command map', function() {
