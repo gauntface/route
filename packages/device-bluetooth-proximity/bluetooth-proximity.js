@@ -21,7 +21,9 @@ class BluetoothProximity extends RouteDevice {
     this._nobleStateChange = this._nobleStateChange.bind(this);
     this._nobleDiscover = this._nobleDiscover.bind(this);
     this._checkAway = this._checkAway.bind(this);
+  }
 
+  init() {
     noble.on('stateChange', this._nobleStateChange);
     noble.on('discover', this._nobleDiscover);
 
@@ -60,7 +62,7 @@ class BluetoothProximity extends RouteDevice {
     }
 
     this._present = true;
-    this.emit('DeviceEvent', 'Present');
+    this.emitDeviceEvent('Present');
   }
 
   _setAway() {
@@ -69,7 +71,7 @@ class BluetoothProximity extends RouteDevice {
     }
 
     this._present = false;
-    this.emit('DeviceEvent', 'Away');
+    this.emitDeviceEvent('Away');
   }
 
   exit() {

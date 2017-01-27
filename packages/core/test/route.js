@@ -47,7 +47,7 @@ describe('Test Route Class', function() {
 
     const testDevice = new RouteDevice('Test');
     route.addDevice(testDevice);
-    testDevice.emit('DeviceEvent', 'Event');
+    testDevice.emitDeviceEvent('Event');
 
     callbackTriggered.should.equal(true);
   });
@@ -72,7 +72,7 @@ describe('Test Route Class', function() {
     route.addDevice(testDevice1);
     route.addDevice(testDevice2);
 
-    testDevice1.emit('DeviceEvent', 'TestEvent');
+    testDevice1.emitDeviceEvent('TestEvent');
 
     testCommandFired.should.equal(true);
   });

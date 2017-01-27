@@ -13,12 +13,24 @@ class RouteDevice extends EventEmitter {
     this.id = id;
   }
 
+  init() {
+    throw new Error('This method must be overriden.');
+  }
+
   /**
    * The ...args here will pass the remaining input directly through to
    * super.emit() as is.
    */
-  emit(eventType, eventName, ...args) {
-    super.emit(eventType, `${this.id}.${eventName}`, ...args);
+  emit(eventType, eventName, data) {
+    super.emit(eventType, `${this.id}.${eventName}`, data);
+  }
+
+  emitDeviceEvent(eventName, data) {
+    this.emit('DeviceEvent', eventName, data);
+  }
+
+  emitStateEvent(eventName, data) {
+    this.emit('StateEvent', eventName, data);
   }
 
   exit() {

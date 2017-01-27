@@ -1,5 +1,4 @@
 const EventEmitter = require('events').EventEmitter;
-const url = require('url');
 
 const exitLifecycle = require('./exit-lifecycle');
 const RouteDevice = require('./route-device');
@@ -48,6 +47,8 @@ class Route extends EventEmitter {
     //   // remember, this is a reference
     //   obj.initStateObserver(this, this.state);
     // }
+
+    newDevice.init();
   }
   addEventCommand(eventName, command) {
     if (!this._eventCmdMap[eventName]) {

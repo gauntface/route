@@ -15,11 +15,9 @@ class LocalSpotify extends RouteDevice {
     }
 
     super(id);
-
-    this._initMopidy();
   }
 
-  _initMopidy() {
+  init() {
     this._mopidyOnline = false;
     this._mopidyInstance = new Mopidy({
       callingConvention: 'by-position-or-by-name',
@@ -127,10 +125,12 @@ class LocalSpotify extends RouteDevice {
   }
 
   exit() {
-    // Close the WebSocket without reconnecting.
-    this._mopidyInstance.close();
-    // Unregister all event listeners.
-    this._mopidyInstance.off();
+    if (this._mopidyInstance) {
+      // Close the WebSocket without reconnecting.
+      this._mopidyInstance.close();
+      // Unregister all event listeners.
+      this._mopidyInstance.off();
+    }
     // Delete your reference to the object, so it can be garbage collected.
     this._mopidyInstance = null;
 

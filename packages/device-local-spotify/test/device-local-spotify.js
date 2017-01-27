@@ -3,6 +3,15 @@ const LocalSpotify = require('../local-spotify');
 
 describe('Test Local Spotify Device', function() {
   const PLAYLIST_EXAMPLE = 'https://play.spotify.com/user/mattgaunt/playlist/6pOIdTUvKFiMmzlG4clupX';
+  let spotifyDevice;
+
+  afterEach(function() {
+    if (spotifyDevice) {
+      spotifyDevice.exit();
+    }
+
+    spotifyDevice = null;
+  });
 
   it('should be constructed without values', function() {
     this.timeout(6 * 1000);
@@ -14,7 +23,7 @@ describe('Test Local Spotify Device', function() {
   it('should not throw when stopping an non-playing track', function() {
     this.timeout(15 * 1000);
 
-    const spotifyDevice = new LocalSpotify();
+    spotifyDevice = new LocalSpotify();
     return spotifyDevice.stop()
     .then(() => {
       return spotifyDevice.exit();
@@ -24,7 +33,7 @@ describe('Test Local Spotify Device', function() {
   it('should be able to play, stop, play and stop playlist after initialisation', function() {
     this.timeout(30 * 1000);
 
-    const spotifyDevice = new LocalSpotify();
+    spotifyDevice = new LocalSpotify();
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
@@ -58,7 +67,7 @@ describe('Test Local Spotify Device', function() {
   it('should handle killing of mopidy service', function() {
     this.timeout(40 * 1000);
 
-    const spotifyDevice = new LocalSpotify();
+    spotifyDevice = new LocalSpotify();
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
@@ -106,7 +115,7 @@ describe('Test Local Spotify Device', function() {
   it('should be able to exit mopidy', function() {
     this.timeout(20 * 1000);
 
-    const spotifyDevice = new LocalSpotify();
+    spotifyDevice = new LocalSpotify();
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {

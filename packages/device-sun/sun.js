@@ -1,12 +1,6 @@
 const RouteDevice = require('routoh/route-device');
 const suncalc = require('suncalc');
 
-const TRACKED_EVENTS = [
-  'NightEnd', 'NauticalDawn', 'Dawn', 'Sunrise', 'SunriseEnd', 'GoldenHourEnd',
-  'SolarNoon', 'GoldenHour', 'SunsetStart', 'Sunset', 'Dusk', 'NauticalDusk',
-  'Night',
-];
-
 class Sun extends RouteDevice {
   constructor({id, latitude, longitude} = {}) {
     if (!id) {
@@ -14,11 +8,18 @@ class Sun extends RouteDevice {
     }
     super(id);
 
+    if (!latitude || !longitude) {
+      throw new Error(`A 'latitude' & 'longitude' are required inputs for ` +
+        `this device.`);
+    }
+
     this._latitude = latitude;
     this._longitude = longitude;
 
     this._updateSunEvents = this._updateSunEvents.bind(this);
+  }
 
+  init() {
     this._updateSunEvents();
   }
 
@@ -26,20 +27,10 @@ class Sun extends RouteDevice {
     const rawSunInfo = suncalc.getTimes(
       new Date(), this._latitude, this._longitude);
 
-    const sunEventInfo = this._normalizeKeys(rawSunInfo);
+    const sunEventInfo = this._sortAndParseSunEvents(rawSunInfo);
 
-    const sunPosition = suncalc.getPosition(
-      new Date(), this._latitude, this._longitude);
-
-    this.emit('StateEvent', {
-      SunEvents: sunEventInfo,
-    });
-    this.emit('StateEvent', {
-      SunEvent: this._getCurrentSunEvent(new Date(), sunEventInfo),
-    });
-    this.emit('StateEvent', {
-      SunPosition: sunPosition,
-    });
+    this._updateCurrentState(sunEventInfo);
+    this._configureDaysEvents(sunEventInfo);
 
     // recalculate tomorrow at 3am;
     const tomorrow = new Date();
@@ -48,25 +39,57 @@ class Sun extends RouteDevice {
     tomorrow.setMinutes(0);
     tomorrow.setSeconds(0);
 
-    const intervalTime = tomorrow.getTime() - (new Date()).getTime();
-    setTimeout(this._updateSunEvents, intervalTime);
+    this._setDateTimeout(this._updateSunEvents, tomorrow);
   }
 
-  _normalizeKeys(obj) {
-    const normalisedKeys = {};
-    Object.keys(obj).forEach((key) => {
-      const parsedKey = key.charAt(0).toUpperCase() +
-        key.slice(1);
-      normalisedKeys[parsedKey] = obj[key];
+  _sortAndParseSunEvents(sunInfo) {
+    const sortedSunEvents = Object.keys(sunInfo).sort((a, b) => {
+      return sunInfo[a] - sunInfo[b];
     });
-    return normalisedKeys;
+
+    return sortedSunEvents.map((sunEvent) => {
+      const upperCase = sunEvent.charAt(0).toUpperCase() + sunEvent.slice(1);
+      return {
+        eventName: upperCase,
+        date: sunInfo[sunEvent],
+      };
+    });
+  }
+
+  _setDateTimeout(callback, date) {
+    const timeDiff = date.getTime() - (new Date()).getTime();
+    if (timeDiff <= 0) {
+      return;
+    }
+
+    return setTimeout(callback, timeDiff);
+  }
+
+  _updateCurrentState(sunEventInfo) {
+    const sunPosition = suncalc.getPosition(
+      new Date(), this._latitude, this._longitude);
+
+    const currentSunEvent = this._getCurrentSunEvent(new Date(), sunEventInfo);
+
+    this.emitStateEvent('TodaysEvents', sunEventInfo);
+    this.emitStateEvent('CurrentSunEvent', currentSunEvent);
+    this.emitStateEvent('SunPosition', sunPosition);
+  }
+
+  _configureDaysEvents(sunEventInfo) {
+    sunEventInfo.forEach((eventInfo) => {
+      this._setDateTimeout(() => {
+        this.emitDeviceEvent(eventInfo.eventName);
+        this.emitStateEvent('CurrentSunEvent', eventInfo.eventName);
+      }, eventInfo.date);
+    });
   }
 
   _getCurrentSunEvent(date, sunEventInfo) {
-    let sunEvent = 'Night';
-    TRACKED_EVENTS.forEach((eventName) => {
-      if (sunEventInfo[eventName] < date) {
-        sunEvent = eventName;
+    let sunEvent;
+    sunEventInfo.forEach((eventInfo) => {
+      if (eventInfo.date < date) {
+        sunEvent = eventInfo.eventName;
       }
     });
 

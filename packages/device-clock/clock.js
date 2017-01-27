@@ -12,7 +12,9 @@ class Clock extends RouteDevice {
 
     // Set binding so it can be used with setTimeout
     this._onIntervalTick = this._onIntervalTick.bind(this);
+  }
 
+  init() {
     this._setTimeout();
   }
 
@@ -33,7 +35,7 @@ class Clock extends RouteDevice {
     this._setTimeout();
 
     const eventName = `${hours}${minutes}`;
-    this.emit('DeviceEvent', eventName);
+    this.emitDeviceEvent(eventName);
   }
 
   _setTimeout() {
