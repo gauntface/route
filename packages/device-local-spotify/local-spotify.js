@@ -15,10 +15,11 @@ class LocalSpotify extends RouteDevice {
     }
 
     super(id);
+
+    this._mopidyOnline = false;
   }
 
   init() {
-    this._mopidyOnline = false;
     this._mopidyInstance = new Mopidy({
       callingConvention: 'by-position-or-by-name',
       webSocketUrl: 'ws://localhost:6680/mopidy/ws/',
@@ -36,6 +37,9 @@ class LocalSpotify extends RouteDevice {
       switch(eventName) {
         case 'websocket:incomingMessage':
         case 'websocket:outgoingMessage':
+        case 'websocket:error':
+        case 'websocket:close':
+        case 'reconnectionPending':
           return;
         default:
           if (lastEventName !== eventName) {
@@ -54,11 +58,11 @@ class LocalSpotify extends RouteDevice {
   }
 
   _getMopidyInstance() {
-    this._spawnMopidyService();
-
-    if (this._mopidyOnline) {
+    if (this._mopidyOnline && this._mopidyInstance) {
       return Promise.resolve(this._mopidyInstance);
     }
+
+    this._spawnMopidyService();
 
     return new Promise((resolve) => {
       const listener = () => {
@@ -119,9 +123,15 @@ class LocalSpotify extends RouteDevice {
   }
 
   stop() {
-    return this._getMopidyInstance().then((mopidyInstance) => {
-      return mopidyInstance.playback.stop();
-    });
+    if (!this._mopidyOnline) {
+      return Promise.resolve();
+    }
+
+    if (!this._mopidyInstance || ! this._mopidyInstance.playback) {
+      return Promise.resolve();
+    }
+
+    return Promise.resolve(this._mopidyInstance.playback.stop());
   }
 
   exit() {

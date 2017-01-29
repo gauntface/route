@@ -13,8 +13,14 @@ class RouteDevice extends EventEmitter {
     this.id = id;
   }
 
+  /**
+   * This method is called by the router and is option for
+   * devices that have initialisation that could result in events
+   * being dispatched. This gives the router a chance to register for
+   * these events.
+   */
   init() {
-    throw new Error('This method must be overriden.');
+    // NOOP.
   }
 
   /**

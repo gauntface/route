@@ -1,6 +1,6 @@
 const proxyquire = require('proxyquire');
 const sinon = require('sinon');
-const BluetoothProximity = require('../bluetooth-proximity');
+const BluetoothProximity = require('../../bluetooth-proximity');
 
 const expect = require('chai').expect;
 require('chai').should();
@@ -43,7 +43,7 @@ describe('Bluetooth Proximity', function() {
     return new Promise((resolve, reject) => {
       let canScan = false;
       const nobleCb = {};
-      const BTPFake = proxyquire('../bluetooth-proximity', {
+      const BTPFake = proxyquire('../../bluetooth-proximity', {
         noble: {
           on: (name, cb) => {
             nobleCb[name] = cb;
@@ -63,8 +63,12 @@ describe('Bluetooth Proximity', function() {
       fakeBTP.on('DeviceEvent', (eventName) => {
         lastEventName = eventName;
       });
+
+      fakeBTP.init();
+
       canScan = true;
-      nobleCb['stateChange']('poweredOn');
+      nobleCb.stateChange('poweredOn');
+
       fakeBTP._present.should.equal(true);
       sinonClock.tick(95000);
       fakeBTP._present.should.equal(false);
@@ -72,12 +76,12 @@ describe('Bluetooth Proximity', function() {
       sinonClock.tick(95000);
       fakeBTP._present.should.equal(false);
       lastEventName.should.equal('BluetoothProximity.Away');
-      nobleCb['discover']({
+      nobleCb.discover({
         address: fakeMac + ':FA:KE',
       });
       fakeBTP._present.should.equal(false);
       lastEventName.should.equal('BluetoothProximity.Away');
-      nobleCb['discover']({
+      nobleCb.discover({
         address: fakeMac,
       });
       fakeBTP._present.should.equal(true);

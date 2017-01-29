@@ -1,5 +1,10 @@
 const spawnSync = require('child_process').spawnSync;
-const LocalSpotify = require('../local-spotify');
+const LocalSpotify = require('../../local-spotify');
+
+if (process.env['TRAVIS']) {
+  console.warn(`Skipping integration tests for device-local-spotify on Travis.`);
+  return;
+}
 
 describe('Test Local Spotify Device', function() {
   const PLAYLIST_EXAMPLE = 'https://play.spotify.com/user/mattgaunt/playlist/6pOIdTUvKFiMmzlG4clupX';
@@ -34,6 +39,8 @@ describe('Test Local Spotify Device', function() {
     this.timeout(30 * 1000);
 
     spotifyDevice = new LocalSpotify();
+    spotifyDevice.init();
+
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
@@ -68,6 +75,7 @@ describe('Test Local Spotify Device', function() {
     this.timeout(40 * 1000);
 
     spotifyDevice = new LocalSpotify();
+    spotifyDevice.init();
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
@@ -116,6 +124,7 @@ describe('Test Local Spotify Device', function() {
     this.timeout(20 * 1000);
 
     spotifyDevice = new LocalSpotify();
+    spotifyDevice.init();
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {

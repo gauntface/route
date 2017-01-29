@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 
-const Clock = require('../clock');
+const Clock = require('../../clock');
 
 require('chai').should();
 

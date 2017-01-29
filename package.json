@@ -4,7 +4,9 @@
   "description": "Home automation and event router [Fork of http://route.io/]",
   "scripts": {
     "lint": "eslint '.' --ignore-path .gitignore",
-    "test": "npm run lint && mocha ./packages/**/test/*.js",
+    "unit-test": "mocha ./packages/**/test/node/*.js",
+    "integration-test": "mocha ./packages/**/test/integration/*.js",
+    "test": "npm run lint && npm run unit-test && npm run integration-test",
     "publish-release": "npm run test && lerna publish"
   },
   "repository": {

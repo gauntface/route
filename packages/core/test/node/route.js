@@ -1,7 +1,7 @@
 const expect = require('chai').expect;
 
-const Route = require('../route');
-const RouteDevice = require('../route-device');
+const Route = require('../../route');
+const RouteDevice = require('../../route-device');
 
 require('chai').should();
 

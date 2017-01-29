@@ -12,9 +12,7 @@ class Clock extends RouteDevice {
 
     // Set binding so it can be used with setTimeout
     this._onIntervalTick = this._onIntervalTick.bind(this);
-  }
 
-  init() {
     this._setTimeout();
   }
 
