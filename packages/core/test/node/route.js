@@ -53,16 +53,9 @@ describe('Test Route Class', function() {
   });
 
   it('should be able to add an event - command pair (Command as String)', function() {
-    const name = 'Device1.TestEvent';
-    const command = 'Device2.TestCommand';
     const exampleArgs = {
       id: Date.now(),
     };
-    const route = new Route();
-    route.addEventCommand(name, command);
-
-    Object.keys(route._eventCmdMap).length.should.equal(1);
-    route._eventCmdMap[name].length.should.equal(1);
 
     const testDevice1 = new RouteDevice('Device1');
     const testDevice2 = new RouteDevice('Device2');
@@ -74,10 +67,16 @@ describe('Test Route Class', function() {
       data.should.equal(exampleArgs);
     });
 
+    const route = new Route();
+    route.addEventCommand('Device1.TestEvent', 'Device2.TestCommand', exampleArgs);
+
+    Object.keys(route._eventCmdMap).length.should.equal(1);
+    route._eventCmdMap['Device1.TestEvent'].length.should.equal(1);
+
     route.addDevice(testDevice1);
     route.addDevice(testDevice2);
 
-    testDevice1.emitDeviceEvent('TestEvent', exampleArgs);
+    testDevice1.emitDeviceEvent('TestEvent');
 
     testCommandFired.should.equal(true);
   });

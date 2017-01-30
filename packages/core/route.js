@@ -50,13 +50,16 @@ class Route extends EventEmitter {
 
     newDevice.init();
   }
-  addEventCommand(eventName, command) {
+  addEventCommand(eventName, command, data) {
     if (!this._eventCmdMap[eventName]) {
       this._eventCmdMap[eventName] = [];
     }
 
     this._eventCmdMap[eventName] =
-      this._eventCmdMap[eventName].concat(command);
+      this._eventCmdMap[eventName].concat({
+        command,
+        data,
+      });
   }
 
   addEventCommandMap(map) {
@@ -72,37 +75,40 @@ class Route extends EventEmitter {
     }
 
     const eventTriggers = this._eventCmdMap[eventName];
-    eventTriggers.forEach((eventTrigger) => {
-      switch(typeof eventTrigger) {
+    eventTriggers.forEach((eventTriggerObj) => {
+      const command = eventTriggerObj.command;
+      const data = eventTriggerObj.data;
+
+      switch(typeof command) {
         case 'function':
           try {
-            eventTrigger();
+            command(data);
           } catch (err) {
             logHelper.error(`Error occurred when calling function ` +
               `for '${eventName}'.`, err);
           }
           break;
         case 'string': {
-          const eventTriggerParts = eventTrigger.split('.');
+          const eventTriggerParts = command.split('.');
           if (eventTriggerParts.length < 2) {
             this.logHelper.warn(`Unexpected & unhandled event: ` +
-              `'${eventTrigger}'`);
+              `'${command}'`);
             return;
           }
 
           const deviceName = eventTriggerParts[0];
-          const command = eventTriggerParts.splice(1).join('.');
+          const deviceCommand = eventTriggerParts.splice(1).join('.');
 
           if (!this._devices[deviceName]) {
             this.logHelper.warn(`Device does not exist: ${deviceName}`);
             return;
           }
 
-          this._devices[deviceName].emitCommandEvent(command, data);
+          this._devices[deviceName].emitCommandEvent(deviceCommand, data);
           break;
         }
         default:
-          logHelper.error('Unable to do anything with : ' + eventTrigger);
+          logHelper.error('Unable to do anything with : ' + command);
           break;
       }
     });
