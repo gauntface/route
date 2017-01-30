@@ -13,7 +13,7 @@ class Route extends EventEmitter {
     this._stateWatchers = {};
     this._debug = data.debug;
 
-    this._handleEvent = this._handleEvent.bind(this);
+    this._handleDeviceEvent = this._handleDeviceEvent.bind(this);
 
     this.logHelper = logHelper;
 
@@ -41,7 +41,7 @@ class Route extends EventEmitter {
 
     this._devices[newDevice.id] = newDevice;
 
-    newDevice.on('DeviceEvent', this._handleEvent);
+    newDevice.on('DeviceEvent', this._handleDeviceEvent);
 
     // if (newDevice.type.STATEOBSERVER) {
     //   // remember, this is a reference
@@ -69,20 +69,24 @@ class Route extends EventEmitter {
     });
   }
 
-  _handleEvent({eventName, data}) {
-    if(!this._eventCmdMap[eventName]) {
+  _handleDeviceEvent({deviceId, eventName, eventData}) {
+    const routeEventName = `${deviceId}.${eventName}`;
+    if(!this._eventCmdMap[routeEventName]) {
       return;
     }
 
-    const eventTriggers = this._eventCmdMap[eventName];
+    const eventTriggers = this._eventCmdMap[routeEventName];
     eventTriggers.forEach((eventTriggerObj) => {
       const command = eventTriggerObj.command;
-      const data = eventTriggerObj.data;
-
+      const userData = eventTriggerObj.data;
+      const allData = {
+        eventData,
+        userData,
+      };
       switch(typeof command) {
         case 'function':
           try {
-            command(data);
+            command(allData);
           } catch (err) {
             logHelper.error(`Error occurred when calling function ` +
               `for '${eventName}'.`, err);
@@ -104,7 +108,7 @@ class Route extends EventEmitter {
             return;
           }
 
-          this._devices[deviceName].emitCommandEvent(deviceCommand, data);
+          this._devices[deviceName].emitCommandEvent(deviceCommand, allData);
           break;
         }
         default:

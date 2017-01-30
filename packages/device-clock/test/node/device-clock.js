@@ -32,10 +32,11 @@ describe('Test Clock Device', function() {
       const clock = new Clock();
       let numberOfEvents = 0;
       const expectedEventNames = [
-        'Clock.0001',
-        'Clock.0002',
+        '0001',
+        '0002',
       ];
-      clock.on('DeviceEvent', ({eventName}) => {
+      clock.on('DeviceEvent', ({deviceId, eventName}) => {
+        deviceId.should.equal('Clock');
         eventName.should.equal(expectedEventNames[numberOfEvents]);
         numberOfEvents++;
 

@@ -219,7 +219,9 @@ describe('Test Local Spotify Device', function() {
       const spotifyDevice = new LocalSpotify();
       spotifyDevice.init();
       spotifyDevice.emitCommandEvent('Play', {
-        playlistUrl: PLAYLIST_EXAMPLE,
+        userData: {
+          playlistUrl: PLAYLIST_EXAMPLE,
+        },
       });
     });
   });

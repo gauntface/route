@@ -27,23 +27,31 @@ class RouteDevice extends EventEmitter {
    * The ...args here will pass the remaining input directly through to
    * super.emit() as is.
    */
-  emit(eventType, eventName, data) {
-    super.emit(eventType, {
-      eventName,
-      data,
+  emit(eventType, eventDetails) {
+    super.emit(eventType, eventDetails);
+  }
+
+  emitCommandEvent(commandName, data) {
+    this.emit('CommandEvent', {
+      commandName,
+      commandData: data,
     });
   }
 
-  emitCommandEvent(eventName, data) {
-    this.emit('CommandEvent', `${eventName}`, data);
-  }
-
   emitDeviceEvent(eventName, data) {
-    this.emit('DeviceEvent', `${this.id}.${eventName}`, data);
+    this.emit('DeviceEvent', {
+      deviceId: this.id,
+      eventName: eventName,
+      eventData: data,
+    });
   }
 
   emitStateEvent(eventName, data) {
-    this.emit('StateEvent', `${this.id}.${eventName}`, data);
+    this.emit('StateEvent', {
+      deviceId: this.id,
+      eventName: eventName,
+      eventData: data,
+    });
   }
 
   exit() {

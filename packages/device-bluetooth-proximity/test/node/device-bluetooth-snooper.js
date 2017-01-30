@@ -57,11 +57,11 @@ describe('Bluetooth Proximity', function() {
         },
       });
 
-      let lastEventName = null;
+      let lastEventDetails = null;
 
       const fakeBTP = new BTPFake({mac: fakeMac});
-      fakeBTP.on('DeviceEvent', ({eventName}) => {
-        lastEventName = eventName;
+      fakeBTP.on('DeviceEvent', (eventDetails) => {
+        lastEventDetails = eventDetails;
       });
 
       fakeBTP.init();
@@ -70,22 +70,35 @@ describe('Bluetooth Proximity', function() {
       nobleCb.stateChange('poweredOn');
 
       fakeBTP._present.should.equal(true);
+
       sinonClock.tick(95000);
+
       fakeBTP._present.should.equal(false);
-      lastEventName.should.equal('BluetoothProximity.Away');
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Away');
+
       sinonClock.tick(95000);
+
       fakeBTP._present.should.equal(false);
-      lastEventName.should.equal('BluetoothProximity.Away');
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Away');
+
       nobleCb.discover({
         address: fakeMac + ':FA:KE',
       });
+
       fakeBTP._present.should.equal(false);
-      lastEventName.should.equal('BluetoothProximity.Away');
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Away');
+
       nobleCb.discover({
         address: fakeMac,
       });
+
       fakeBTP._present.should.equal(true);
-      lastEventName.should.equal('BluetoothProximity.Present');
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Present');
+
       resolve();
     });
   });
