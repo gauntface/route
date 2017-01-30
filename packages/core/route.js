@@ -98,7 +98,7 @@ class Route extends EventEmitter {
             return;
           }
 
-          this._devices[deviceName].emit(command);
+          this._devices[deviceName].emitCommandEvent(command);
           break;
         }
         default:

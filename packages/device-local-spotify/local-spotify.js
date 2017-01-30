@@ -55,6 +55,32 @@ class LocalSpotify extends RouteDevice {
     this._mopidyInstance.on('state:offline', () => {
       this._mopidyOnline = false;
     });
+
+    this.addListener('CommandEvent', (eventName, args) => {
+      switch(eventName) {
+        case 'Play':
+          if (!args.playlistUrl) {
+            this.logHelper.log('Play event received but no playlist ' +
+              'URL supplied: ', args);
+            return;
+          }
+
+          this.playPlaylist(args.playlistUrl)
+          .catch((err) => {
+            this.logHelper.error(err);
+          });
+          break;
+        case 'Stop':
+          this.stop()
+          .catch((err) => {
+            this.logHelper.error(err);
+          });
+          break;
+        default:
+          this.logHelper.log(`Unknown Event Received: '${eventName}'`);
+          break;
+      }
+    });
   }
 
   _getMopidyInstance() {
@@ -79,9 +105,7 @@ class LocalSpotify extends RouteDevice {
     }
 
     this._mopidyService = spawn('mopidy');
-    this._mopidyService.on('close', (code, signal) => {
-      this.logHelper.log('Mopidy Service is closed.');
-
+    this._mopidyService.addListener('close', (code, signal) => {
       this._mopidyService = null;
     });
   }
@@ -147,7 +171,7 @@ class LocalSpotify extends RouteDevice {
     // Kill mopidy service.
     if (this._mopidyService) {
       return new Promise((resolve) => {
-        this._mopidyService.on('close', resolve);
+        this._mopidyService.addListener('close', resolve);
         spawn('killall', ['mopidy']);
       });
     }

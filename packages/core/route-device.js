@@ -28,15 +28,19 @@ class RouteDevice extends EventEmitter {
    * super.emit() as is.
    */
   emit(eventType, eventName, data) {
-    super.emit(eventType, `${this.id}.${eventName}`, data);
+    super.emit(eventType, `${eventName}`, data);
+  }
+
+  emitCommandEvent(eventName, data) {
+    this.emit('CommandEvent', `${eventName}`, data);
   }
 
   emitDeviceEvent(eventName, data) {
-    this.emit('DeviceEvent', eventName, data);
+    this.emit('DeviceEvent', `${this.id}.${eventName}`, data);
   }
 
   emitStateEvent(eventName, data) {
-    this.emit('StateEvent', eventName, data);
+    this.emit('StateEvent', `${this.id}.${eventName}`, data);
   }
 
   exit() {

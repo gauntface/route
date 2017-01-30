@@ -16,6 +16,9 @@ module.exports = (mockInput) => {
         if (this.__mockAPI.eventListener['state:online']) {
           this.__mockAPI.eventListener['state:online']();
         }
+        if (this.__mockAPI.online) {
+          this.__mockAPI.online();
+        }
       }, 200);
     }
 
