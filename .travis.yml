@@ -4,8 +4,10 @@ node_js:
 cache:
   directories:
   - node_modules
+before_install:
+  # Needed for device-bluetooth-proximity.
+  - sudo apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 before_script:
   - npm install
-  - apt-get install bluetooth bluez libbluetooth-dev libudev-dev
 script:
   - npm run test
