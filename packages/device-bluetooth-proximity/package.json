@@ -6,7 +6,6 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "bluetooth-scanner": "^1.0.1",
     "noble": "^1.7.0",
     "routoh": "^0.0.12"
   }
