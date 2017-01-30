@@ -1,12 +1,12 @@
 {
   "name": "routoh-device-bluetooth-proximity",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "bluetooth-proximity.js",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
     "noble": "^1.7.0",
-    "routoh": "^0.0.12"
+    "routoh": "^0.0.13"
   }
 }

@@ -1,11 +1,11 @@
 {
   "name": "routoh-device-clock",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "clock.js",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "routoh": "^0.0.12"
+    "routoh": "^0.0.13"
   }
 }

@@ -1,12 +1,12 @@
 {
   "name": "routoh-device-sun",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "",
   "main": "sun.js",
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "routoh": "^0.0.12",
+    "routoh": "^0.0.13",
     "suncalc": "^1.8.0"
   }
 }
