@@ -56,16 +56,16 @@ class LocalSpotify extends RouteDevice {
       this._mopidyOnline = false;
     });
 
-    this.addListener('CommandEvent', (eventName, args) => {
+    this.addListener('CommandEvent', ({eventName, data}) => {
       switch(eventName) {
         case 'Play':
-          if (!args.playlistUrl) {
+          if (!data.playlistUrl) {
             this.logHelper.log('Play event received but no playlist ' +
-              'URL supplied: ', args);
+              'URL supplied: ', data);
             return;
           }
 
-          this.playPlaylist(args.playlistUrl)
+          this.playPlaylist(data.playlistUrl)
           .catch((err) => {
             this.logHelper.error(err);
           });
@@ -77,7 +77,7 @@ class LocalSpotify extends RouteDevice {
           });
           break;
         default:
-          this.logHelper.log(`Unknown Event Received: '${eventName}'`);
+          this.logHelper.warn(`Unknown Event Received: '${eventName}'`);
           break;
       }
     });

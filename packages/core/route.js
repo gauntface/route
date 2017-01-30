@@ -66,7 +66,7 @@ class Route extends EventEmitter {
     });
   }
 
-  _handleEvent(eventName, ...args) {
+  _handleEvent({eventName, data}) {
     if(!this._eventCmdMap[eventName]) {
       return;
     }
@@ -98,7 +98,7 @@ class Route extends EventEmitter {
             return;
           }
 
-          this._devices[deviceName].emitCommandEvent(command);
+          this._devices[deviceName].emitCommandEvent(command, data);
           break;
         }
         default:

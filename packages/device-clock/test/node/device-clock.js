@@ -35,7 +35,7 @@ describe('Test Clock Device', function() {
         'Clock.0001',
         'Clock.0002',
       ];
-      clock.on('DeviceEvent', (eventName) => {
+      clock.on('DeviceEvent', ({eventName}) => {
         eventName.should.equal(expectedEventNames[numberOfEvents]);
         numberOfEvents++;
 

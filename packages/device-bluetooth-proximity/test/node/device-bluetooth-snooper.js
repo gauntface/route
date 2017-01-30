@@ -60,7 +60,7 @@ describe('Bluetooth Proximity', function() {
       let lastEventName = null;
 
       const fakeBTP = new BTPFake({mac: fakeMac});
-      fakeBTP.on('DeviceEvent', (eventName) => {
+      fakeBTP.on('DeviceEvent', ({eventName}) => {
         lastEventName = eventName;
       });
 

@@ -55,6 +55,9 @@ describe('Test Route Class', function() {
   it('should be able to add an event - command pair (Command as String)', function() {
     const name = 'Device1.TestEvent';
     const command = 'Device2.TestCommand';
+    const exampleArgs = {
+      id: Date.now(),
+    };
     const route = new Route();
     route.addEventCommand(name, command);
 
@@ -65,14 +68,16 @@ describe('Test Route Class', function() {
     const testDevice2 = new RouteDevice('Device2');
 
     let testCommandFired = false;
-    testDevice2.on('TestCommand', () => {
+    testDevice2.on('CommandEvent', ({eventName, data}) => {
       testCommandFired = true;
+      eventName.should.equal('TestCommand');
+      data.should.equal(exampleArgs);
     });
 
     route.addDevice(testDevice1);
     route.addDevice(testDevice2);
 
-    testDevice1.emitDeviceEvent('TestEvent');
+    testDevice1.emitDeviceEvent('TestEvent', exampleArgs);
 
     testCommandFired.should.equal(true);
   });
