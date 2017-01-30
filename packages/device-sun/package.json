@@ -3,9 +3,6 @@
   "version": "0.0.12",
   "description": "",
   "main": "sun.js",
-  "scripts": {
-    "test": "mocha"
-  },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {

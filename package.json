@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Home automation and event router [Fork of http://route.io/]",
   "scripts": {
+    "postinstall": "node ./utils/packages-npm-install.js",
     "lint": "eslint '.' --ignore-path .gitignore",
     "unit-test": "mocha ./packages/**/test/node/*.js",
     "integration-test": "mocha ./packages/**/test/integration/*.js",
