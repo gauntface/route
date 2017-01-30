@@ -5,6 +5,7 @@ cache:
   directories:
   - node_modules
 before_install:
+  - npm -g install node-gyp
   - sudo apt-get -qq update
   # Needed for device-bluetooth-proximity.
   - sudo apt-get install -y bluetooth bluez libbluetooth-dev libudev-dev
