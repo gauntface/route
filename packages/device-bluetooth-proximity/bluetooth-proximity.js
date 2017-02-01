@@ -27,18 +27,27 @@ class BluetoothProximity extends RouteDevice {
     noble.on('stateChange', this._nobleStateChange);
     noble.on('discover', this._nobleDiscover);
 
-    setInterval(this._checkAway.bind(this), MANUAL_UPDATE_PERIOD);
+    if (noble.state === 'poweredOn') {
+      this._startScanning();
+    }
+  }
+
+  _startScanning() {
+    if (!this._lastSeen) {
+      // This initialises the state.
+      this._lastSeen = new Date().getTime();
+      this._present = true;
+
+      setInterval(this._checkAway.bind(this), MANUAL_UPDATE_PERIOD);
+    }
+    noble.startScanning();
   }
 
   _nobleStateChange(state) {
     if (state === 'poweredOn') {
-      if (!this._lastSeen) {
-        // Pretend we're here.
-        this._lastSeen = new Date().getTime();
-        this._present = true;
-      }
-
-      noble.startScanning([], true);
+      this._startScanning();
+    } else {
+      noble.stopScanning();
     }
   }
 

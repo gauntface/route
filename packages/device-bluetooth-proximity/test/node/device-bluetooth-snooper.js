@@ -41,7 +41,7 @@ describe('Bluetooth Proximity', function() {
 
   it('should wait until poweredOn to perform any work', function() {
     return new Promise((resolve, reject) => {
-      let canScan = false;
+      let currentState = 'poweredOff';
       const nobleCb = {};
       const BTPFake = proxyquire('../../bluetooth-proximity', {
         noble: {
@@ -49,11 +49,12 @@ describe('Bluetooth Proximity', function() {
             nobleCb[name] = cb;
           },
           startScanning: () => {
-            if (!canScan) {
+            if (currentState !== 'poweredOn') {
               reject('noble.startScanning() Called before poweredOn.');
               return;
             }
           },
+          state: currentState,
         },
       });
 
@@ -66,8 +67,8 @@ describe('Bluetooth Proximity', function() {
 
       fakeBTP.init();
 
-      canScan = true;
-      nobleCb.stateChange('poweredOn');
+      currentState = 'poweredOn';
+      nobleCb.stateChange(currentState);
 
       fakeBTP._present.should.equal(true);
 
@@ -102,4 +103,6 @@ describe('Bluetooth Proximity', function() {
       resolve();
     });
   });
+
+  // TODO: Add test to check if poweredOn is state before init();
 });
