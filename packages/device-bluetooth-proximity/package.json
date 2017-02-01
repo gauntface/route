@@ -1,6 +1,6 @@
 {
   "name": "routoh-device-bluetooth-proximity",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "",
   "main": "bluetooth-proximity.js",
   "author": "",
