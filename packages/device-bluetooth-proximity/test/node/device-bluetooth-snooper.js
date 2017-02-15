@@ -48,7 +48,11 @@ describe('Bluetooth Proximity', function() {
           on: (name, cb) => {
             nobleCb[name] = cb;
           },
-          startScanning: () => {
+          startScanning: (udids, duplicatesAllow) => {
+            if (duplicatesAllow !== true) {
+              reject('nobel.startScanning() must allow duplicates');
+              return;
+            }
             if (currentState !== 'poweredOn') {
               reject('noble.startScanning() Called before poweredOn.');
               return;

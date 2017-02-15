@@ -39,7 +39,10 @@ class BluetoothProximity extends RouteDevice {
 
       setInterval(this._checkAway.bind(this), MANUAL_UPDATE_PERIOD);
     }
-    noble.startScanning();
+
+    // We need to allow duplicates so we keep receiving updates for our UDID
+    // of interest.
+    noble.startScanning([], true);
   }
 
   _nobleStateChange(state) {
