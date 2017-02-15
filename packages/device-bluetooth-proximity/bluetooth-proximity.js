@@ -36,7 +36,6 @@ class BluetoothProximity extends RouteDevice {
     if (!this._lastSeen) {
       // This initialises the state.
       this._lastSeen = new Date().getTime();
-      this._present = true;
 
       setInterval(this._checkAway.bind(this), MANUAL_UPDATE_PERIOD);
     }
@@ -66,7 +65,7 @@ class BluetoothProximity extends RouteDevice {
 
   _updatePresence() {
     this._lastSeen = Date.now();
-    if (this._present) {
+    if (this._present === true) {
       return;
     }
 
@@ -75,7 +74,7 @@ class BluetoothProximity extends RouteDevice {
   }
 
   _setAway() {
-    if (!this._present) {
+    if (this._present === false) {
       return;
     }
 

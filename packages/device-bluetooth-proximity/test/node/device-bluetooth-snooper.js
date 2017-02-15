@@ -70,7 +70,7 @@ describe('Bluetooth Proximity', function() {
       currentState = 'poweredOn';
       nobleCb.stateChange(currentState);
 
-      fakeBTP._present.should.equal(true);
+      (typeof fakeBTP._present).should.equal('undefined');
 
       sinonClock.tick(95000);
 
@@ -91,6 +91,53 @@ describe('Bluetooth Proximity', function() {
       fakeBTP._present.should.equal(false);
       lastEventDetails.deviceId.should.equal('BluetoothProximity');
       lastEventDetails.eventName.should.equal('Away');
+
+      nobleCb.discover({
+        address: fakeMac,
+      });
+
+      fakeBTP._present.should.equal(true);
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Present');
+
+      resolve();
+    });
+  });
+
+  it('should dispatch preset event if available on start', function() {
+    return new Promise((resolve, reject) => {
+      let currentState = 'poweredOff';
+      const nobleCb = {};
+      const BTPFake = proxyquire('../../bluetooth-proximity', {
+        noble: {
+          on: (name, cb) => {
+            nobleCb[name] = cb;
+          },
+          startScanning: () => {
+            if (currentState !== 'poweredOn') {
+              reject('noble.startScanning() Called before poweredOn.');
+              return;
+            }
+          },
+          state: currentState,
+        },
+      });
+
+      let lastEventDetails = null;
+
+      const fakeBTP = new BTPFake({mac: fakeMac});
+      fakeBTP.on('DeviceEvent', (eventDetails) => {
+        lastEventDetails = eventDetails;
+      });
+
+      fakeBTP.init();
+
+      currentState = 'poweredOn';
+      nobleCb.stateChange(currentState);
+
+      (typeof fakeBTP._present).should.equal('undefined');
+
+      sinonClock.tick(5000);
 
       nobleCb.discover({
         address: fakeMac,
