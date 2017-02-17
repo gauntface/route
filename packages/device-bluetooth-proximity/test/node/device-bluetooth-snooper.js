@@ -104,6 +104,12 @@ describe('Bluetooth Proximity', function() {
       lastEventDetails.deviceId.should.equal('BluetoothProximity');
       lastEventDetails.eventName.should.equal('Present');
 
+      sinonClock.tick(95000);
+
+      fakeBTP._present.should.equal(false);
+      lastEventDetails.deviceId.should.equal('BluetoothProximity');
+      lastEventDetails.eventName.should.equal('Away');
+
       resolve();
     });
   });
