@@ -1,6 +1,6 @@
 {
   "name": "routoh",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "main": "./route.js",
   "description": "Route links events and commands on your network-aware devices.",
   "homepage": "http://route.io/",
@@ -25,6 +25,7 @@
   ],
   "dependencies": {
     "chalk": "^1.1.3",
-    "console-group": "^0.3.3"
+    "console-group": "^0.3.3",
+    "moment": "^2.17.1"
   }
 }
