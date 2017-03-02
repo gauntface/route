@@ -169,10 +169,15 @@ class LocalSpotify extends RouteDevice {
 
   exit() {
     if (this._mopidyInstance) {
-      // Close the WebSocket without reconnecting.
-      this._mopidyInstance.close();
-      // Unregister all event listeners.
-      this._mopidyInstance.off();
+      try {
+        // Close the WebSocket without reconnecting.
+        this._mopidyInstance.close();
+        // Unregister all event listeners.
+        this._mopidyInstance.off();
+      } catch (err) {
+        this.logHelper.error('An error was thrown while turning off the ' +
+          'Modipy Instance', err.message);
+      }
     }
     // Delete your reference to the object, so it can be garbage collected.
     this._mopidyInstance = null;
