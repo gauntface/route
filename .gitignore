@@ -3,3 +3,5 @@ core-old/
 modules-old/
 examples/
 packages/device-local-spotify/demo.js
+npm-debug.log
+lerna-debug.log

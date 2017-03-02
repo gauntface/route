@@ -1,4 +1,5 @@
 const chalk = require('chalk');
+const moment = require('moment');
 
 require('console-group').install();
 
@@ -19,16 +20,23 @@ class LogHelper {
     }
   }
 
+  getTimestamp() {
+    return moment().format(`DD/MM HH:mm:SS`);
+  }
+
   log(message, ...args) {
-    this._print('log', chalk.dim, '[Info]: ', message, args);
+    this._print('log', chalk.dim, `[Info  ${this.getTimestamp()}]: `,
+      message, args);
   }
 
   warn(message, ...args) {
-    this._print('warn', chalk.yellow, '[Warn]: ', message, args);
+    this._print('warn', chalk.yellow, `[Warn  ${this.getTimestamp()}]: `,
+      message, args);
   }
 
   error(message, ...args) {
-    this._print('error', chalk.red, '[Error]: ', message, args);
+    this._print('error', chalk.red, `[Error  ${this.getTimestamp()}]: `,
+      message, args);
   }
 }
 
