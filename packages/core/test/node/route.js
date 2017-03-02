@@ -91,4 +91,62 @@ describe('Test Route Class', function() {
     Object.keys(route._eventCmdMap).length.should.equal(1);
     route._eventCmdMap[name].length.should.equal(1);
   });
+
+  it('should throw an error when setting a non-function event logger', function() {
+    const route = new Route();
+    expect(() => {
+      route.addEventLogger('Break.');
+    }).to.throw('addEventLogger() expects a function');
+  });
+
+  it('should be able to get log events', function() {
+    return new Promise((resolve) => {
+      const testDevice1 = new RouteDevice('Device1');
+      const testDevice2 = new RouteDevice('Device2');
+      const userData = {
+        id: Date.now(),
+      };
+      const eventData = {
+        TestEvent: {
+          example: 'Hello, World',
+        },
+      };
+
+      const route = new Route();
+
+      route.addEventLogger((input) => {
+        input.deviceId.should.equal('Device1');
+        input.eventName.should.equal('TestEvent');
+        input.eventData.should.equal(eventData);
+        input.eventTriggers.should.deep.equal([{
+          command: 'Device2.TestCommand',
+          data: userData,
+        }]);
+
+        resolve();
+      });
+
+      route.addDevice(testDevice1);
+      route.addDevice(testDevice2);
+
+      route.addEventCommand('Device1.TestEvent', 'Device2.TestCommand', userData);
+      testDevice1.emitDeviceEvent('TestEvent', eventData);
+    });
+  });
+
+  it('should be able to access deviced', function() {
+    const testDevice1 = new RouteDevice('Device1');
+    const testDevice2 = new RouteDevice('Device2');
+
+    const route = new Route();
+
+    route.addDevice(testDevice1);
+    route.addDevice(testDevice2);
+
+    const devices = route.getDevices();
+    const deviceIds = devices.map((device) => {
+      return device.id;
+    });
+    deviceIds.should.deep.equal(['Device1', 'Device2']);
+  });
 });

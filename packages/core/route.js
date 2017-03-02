@@ -11,7 +11,7 @@ class Route extends EventEmitter {
     this._devices = {};
     this._eventCmdMap = {};
     this._stateWatchers = {};
-    this._debug = data.debug;
+    this._eventLogger = null;
 
     this._handleDeviceEvent = this._handleDeviceEvent.bind(this);
 
@@ -27,6 +27,17 @@ class Route extends EventEmitter {
 
       return Promise.all(deviceExitPromises);
     });
+  }
+
+  getDevices() {
+    return Object.values(this._devices);
+  }
+
+  addEventLogger(logger) {
+    if (typeof logger !== 'function') {
+      throw new Error(`addEventLogger() expects a function to be passed in.`);
+    }
+    this._eventLogger = logger;
   }
 
   addDevice(newDevice) {
@@ -50,6 +61,7 @@ class Route extends EventEmitter {
 
     newDevice.init();
   }
+
   addEventCommand(eventName, command, data) {
     if (!this._eventCmdMap[eventName]) {
       this._eventCmdMap[eventName] = [];
@@ -76,6 +88,12 @@ class Route extends EventEmitter {
     }
 
     const eventTriggers = this._eventCmdMap[routeEventName];
+
+    // Make it possible to log this.
+    if (this._eventLogger) {
+      this._eventLogger({deviceId, eventName, eventData, eventTriggers});
+    }
+
     eventTriggers.forEach((eventTriggerObj) => {
       const command = eventTriggerObj.command;
       const userData = eventTriggerObj.data;
