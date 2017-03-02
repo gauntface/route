@@ -226,7 +226,7 @@ describe('Test Local Spotify Device', function() {
     });
   });
 
-  it('should play on stop command', function() {
+  it('should stop on stop command', function() {
     return new Promise((resolve) => {
       const EXAMPLE_TRACKS = ['song-1', 'song-2'];
       const EXAMPLE_TL_TRACKS = ['tl-song-1', 'tl-song-2'];
@@ -283,6 +283,7 @@ describe('Test Local Spotify Device', function() {
       spotifyDevice._mopidyInstance.__mockAPI.online = () => {
         spotifyDevice.emitCommandEvent('Stop');
       };
+      spotifyDevice._mopidyInstance.connect();
     });
   });
 });

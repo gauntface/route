@@ -44,7 +44,7 @@ describe('Test Local Spotify Device', function() {
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
-        setTimeout(resolve, 2000);
+        setTimeout(resolve, 4000);
       });
     })
     .then(() => {
@@ -52,7 +52,7 @@ describe('Test Local Spotify Device', function() {
     })
     .then(() => {
       return new Promise((resolve) => {
-        setTimeout(resolve, 2000);
+        setTimeout(resolve, 4000);
       });
     })
     .then(() => {
@@ -60,7 +60,7 @@ describe('Test Local Spotify Device', function() {
     })
     .then(() => {
       return new Promise((resolve) => {
-        setTimeout(resolve, 2000);
+        setTimeout(resolve, 4000);
       });
     })
     .then(() => {
@@ -128,7 +128,7 @@ describe('Test Local Spotify Device', function() {
     return spotifyDevice.playPlaylist(PLAYLIST_EXAMPLE)
     .then(() => {
       return new Promise((resolve) => {
-        setTimeout(resolve, 2000);
+        setTimeout(resolve, 4000);
       });
     })
     .then(() => {

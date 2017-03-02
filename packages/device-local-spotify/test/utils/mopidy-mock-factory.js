@@ -8,18 +8,6 @@ module.exports = (mockInput) => {
           off: 0,
         },
       };
-
-      setTimeout(() => {
-        this.__mockAPI.playlist = mockInput['playlist'];
-        this.__mockAPI.playback = mockInput['playback'];
-        this.__mockAPI.tracklist = mockInput['tracklist'];
-        if (this.__mockAPI.eventListener['state:online']) {
-          this.__mockAPI.eventListener['state:online']();
-        }
-        if (this.__mockAPI.online) {
-          this.__mockAPI.online();
-        }
-      }, 200);
     }
 
     on(evtName, cb) {
@@ -32,6 +20,18 @@ module.exports = (mockInput) => {
 
     off() {
       this.__mockAPI.functionCallCount.off++;
+    }
+
+    connect() {
+      this.__mockAPI.playlist = mockInput['playlist'];
+      this.__mockAPI.playback = mockInput['playback'];
+      this.__mockAPI.tracklist = mockInput['tracklist'];
+      if (this.__mockAPI.eventListener['state:online']) {
+        this.__mockAPI.eventListener['state:online']();
+      }
+      if (this.__mockAPI.online) {
+        this.__mockAPI.online();
+      }
     }
 
     get playback() {

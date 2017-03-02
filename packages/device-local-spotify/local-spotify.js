@@ -21,6 +21,7 @@ class LocalSpotify extends RouteDevice {
 
   init() {
     this._mopidyInstance = new Mopidy({
+      autoConnect: false,
       callingConvention: 'by-position-or-by-name',
       webSocketUrl: 'ws://localhost:6680/mopidy/ws/',
       console: {
@@ -31,6 +32,7 @@ class LocalSpotify extends RouteDevice {
         debug: () => {},
       },
     });
+    // this._mopidyInstance.connect();
 
     let lastEventName = null;
     this._mopidyInstance.on((eventName) => {
@@ -99,6 +101,7 @@ class LocalSpotify extends RouteDevice {
         resolve(this._mopidyInstance);
       };
       this._mopidyInstance.on('state:online', listener);
+      this._mopidyInstance.connect();
     });
   }
 
@@ -158,7 +161,10 @@ class LocalSpotify extends RouteDevice {
       return Promise.resolve();
     }
 
-    return Promise.resolve(this._mopidyInstance.playback.stop());
+    return Promise.resolve(this._mopidyInstance.playback.stop())
+    .then(() => {
+      this._mopidyInstance.close();
+    });
   }
 
   exit() {
