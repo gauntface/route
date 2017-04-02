@@ -3,7 +3,10 @@ const ssdp = require('node-ssdp');
 const fetch = require('node-fetch');
 const xml2js = require('xml2js');
 
-class Hue extends RouteDevice {
+const callbackQueue = require('./callback-queue');
+const HueLight = require('./hue-light');
+
+class HueHub extends RouteDevice {
   constructor({id, address, username} = {}) {
     if (!id) {
       id = 'Hue';
@@ -87,7 +90,9 @@ class Hue extends RouteDevice {
       return this._updateLightsList();
     })
     .then(() => {
-      this.emitDeviceEvent('Connected');
+      this.emitDeviceEvent('Connected', {
+        lights: this._lights,
+      });
     });
   }
 
@@ -178,8 +183,7 @@ class Hue extends RouteDevice {
 
       Object.keys(response).forEach((lightId) => {
         const lightDetails = response[lightId];
-        lightDetails._id = lightId;
-        this._lights[lightDetails.name] = lightDetails;
+        this._lights[lightId] = new HueLight(lightId, lightDetails);
       });
     })
     .catch((err) => {
@@ -187,6 +191,85 @@ class Hue extends RouteDevice {
       throw err;
     });
   }
+
+  getBulbIdFromName(name) {
+    const lightIds = Object.keys(this._lights);
+    for (let i = 0; i < lightIds.length; i++) {
+      const currentId = lightIds[i];
+      const lightDetails = this._lights[currentId];
+      if (lightDetails.name === name) {
+        return currentId;
+      }
+    }
+    return null;
+  }
+
+  getBulbState(bulbId) {
+    if (!this._lights[bulbId]) {
+      this.logHelper.error('Unable to find light with ID: ', bulbId);
+      throw new Error('Unable to find light with ID: ' + bulbId);
+    }
+
+    return this._lights[bulbId].state;
+  }
+
+  setBulbState(bulbId, newState) {
+    if (!this._lights[bulbId]) {
+      this.logHelper.error('Unable to find light with ID: ', bulbId);
+      throw new Error('Unable to find light with ID: ' + bulbId);
+    }
+
+    callbackQueue.add(() => {
+      return fetch(`http://${this._bridgeAddress}/api/${this._username}/lights/${bulbId}/state`, {
+        body: JSON.stringify(newState),
+        method: 'PUT',
+      })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Non-OK response from bridge.');
+        }
+
+        return response.json();
+      })
+      .then((response) => {
+        if (response.error) {
+          if (response.error.description) {
+            throw new Error(`Bad response from hub: ` +
+              `'${response.error}'`);
+          }
+
+          throw new Error(`Bad response from hub: ` +
+            `'${JSON.stringify(response)}'`);
+        }
+
+        this.updateBulbState(bulbId);
+      });
+    });
+  }
+
+  updateBulbState(bulbId) {
+    callbackQueue.add(() => {
+      return fetch(`http://${this._bridgeAddress}/api/${this._username}/lights/${bulbId}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Non-OK response from bridge.');
+        }
+        return response.json();
+      })
+      .then((response) => {
+        if (response.error) {
+          if (response.error.description) {
+            throw new Error(`Bad response from hub: '${response.error}'`);
+          }
+
+          throw new Error(`Bad response from hub: ` +
+            `'${JSON.stringify(response)}'`);
+        }
+
+        this._lights[bulbId].updateState(response.state);
+      });
+    });
+  }
 }
 
-module.exports = Hue;
+module.exports = HueHub;
