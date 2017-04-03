@@ -59,4 +59,8 @@ describe('Test Hue Device', function() {
       }
     });
   });
+
+  it('should construct with valid input', function() {
+    new HueDevice(EXAMPLE_INPUT);
+  });
 });
