@@ -1,5 +1,7 @@
 const callbackQueue = require('../../callback-queue');
 
+require('chai').should();
+
 describe('Test Hue Callback Queue', function() {
   it('should be fine processing empty queue', function() {
     const badInputs = [

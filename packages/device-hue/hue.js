@@ -13,9 +13,20 @@ class HueHub extends RouteDevice {
     }
     super(id);
 
+    if (typeof address !== 'undefined' &&
+      (typeof address !== 'string' || address.length === 0)) {
+      throw new Error(`The 'address' parameter must be a string containing ` +
+        `an IP address. (i.e. '192.168.0.1').`);
+    }
+
+    if (typeof username !== 'undefined' &&
+      (typeof username !== 'string' || username.length === 0)) {
+      throw new Error(`The 'username' parameter must be a string containing ` +
+        `at least one character.`);
+    }
+
     this._bridgeAddress = address;
     this._username = username;
-    this._discoveredIps = [];
     this._lights = {};
   }
 
@@ -28,16 +39,17 @@ class HueHub extends RouteDevice {
   }
 
   _scanForBridges() {
+    const discoveredIps = [];
     const ssdpClient = new ssdp.Client();
     ssdpClient.on('response', (headers, statusCode, rinfo) => {
       const host = rinfo.address;
-      if (this._discoveredIps.indexOf(host) !== -1) {
+      if (discoveredIps.indexOf(host) !== -1) {
         // Already seen this IP
         return;
       }
 
       // Mark IP as found
-      this._discoveredIps.push(host);
+      discoveredIps.push(host);
 
       const location = headers['LOCATION'];
 
