@@ -32,10 +32,43 @@ class HueHub extends RouteDevice {
 
   init() {
     if (this._bridgeAddress) {
-      this._addBridge(this._bridgeAddress);
+      return this._addBridge(this._bridgeAddress);
     } else {
-      this._scanForBridges();
+      return this._scanForBridges();
     }
+  }
+
+  getDetails() {
+    if (!this._bridgeAddress || !this._username) {
+      return null;
+    }
+
+    return {
+      address: this._bridgeAddress,
+      username: this._username,
+    };
+  }
+
+  getLights() {
+    return this._lights;
+  }
+
+  allOff() {
+    this._applyStateToAll({
+      on: false,
+    });
+  }
+
+  allOn() {
+    this._applyStateToAll({
+      on: true,
+    });
+  }
+
+  _applyStateToAll(newState) {
+    Object.keys(this._lights).forEach((lightId) => {
+      this.setBulbState(lightId, newState);
+    });
   }
 
   _scanForBridges() {
@@ -279,6 +312,10 @@ class HueHub extends RouteDevice {
         }
 
         this._lights[bulbId].updateState(response.state);
+
+        this.emitStateEvent('LightStateChange', {
+          lights: this._lights,
+        });
       });
     });
   }
