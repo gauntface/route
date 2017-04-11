@@ -5,6 +5,7 @@ const xml2js = require('xml2js');
 
 const callbackQueue = require('./callback-queue');
 const HueLight = require('./hue-light');
+const colorsHelper = require('./colors-helper');
 
 class HueHub extends RouteDevice {
   constructor({id, address, username} = {}) {
@@ -31,11 +32,142 @@ class HueHub extends RouteDevice {
   }
 
   init() {
+    let bridgeConnectionPromise;
     if (this._bridgeAddress) {
-      return this._addBridge(this._bridgeAddress);
+      bridgeConnectionPromise = this._addBridge(this._bridgeAddress);
     } else {
-      return this._scanForBridges();
+      bridgeConnectionPromise = this._scanForBridges();
     }
+
+    return bridgeConnectionPromise.then(() => {
+      this.addListener('CommandEvent', ({commandName, commandData}) => {
+        console.log('Received Command Event......');
+        switch(commandName) {
+          case 'AllOn': {
+            this.allOn();
+            break;
+          }
+          case 'AllOff': {
+            this.allOff();
+            break;
+          }
+          case 'ChangeAllColor': {
+            if (!commandData || !commandData.userData) {
+              this.logHelper.warn('Recevied `ChangeAllColor` event without ' +
+                'userdata.');
+              break;
+            }
+
+            const userData = commandData.userData;
+            if (!userData.color) {
+              this.logHelper.warn('Recevied `ChangeAllColor` event without ' +
+                'userdata.color.', userData);
+              break;
+            }
+
+            const hsv = colorsHelper.hex2hsv(userData.color);
+            if (!hsv) {
+              this.logHelper.warn('Recevied `ChangeAllColor` event but ' +
+                'unable to parse userdata.color.', userData.color);
+              break;
+            }
+
+            this._applyStateToAll(colorsHelper.validateValues({
+              on: true,
+              hue: hsv.h,
+              sat: hsv.s,
+              bri: hsv.v,
+            }));
+            break;
+          }
+          case 'ChangeLightState': {
+            if (!commandData || !commandData.userData) {
+              this.logHelper.warn('Recevied `ChangeAllColor` event without ' +
+                'userdata.');
+              break;
+            }
+
+            const userData = commandData.userData;
+            if (typeof userData.on !== 'boolean') {
+              this.logHelper.warn('Recevied `ChangeLightState` event without ' +
+                'userdata.on.', userData);
+              break;
+            }
+            if (!userData.bulbName) {
+              this.logHelper.warn('Recevied `ChangeLightState` event without ' +
+                'userdata.bulbName.', userData);
+              break;
+            }
+
+            const bulbId = this.getBulbIdFromName(userData.bulbName);
+            if (!bulbId) {
+              this.logHelper.warn('Recevied `ChangeLightState` event with an ' +
+                'invalid bulbName.', userData.bulbName);
+              break;
+            }
+
+            const newState = {
+              on: userData.on,
+            };
+
+            if (userData.color) {
+              const hsv = colorsHelper.hex2hsv(userData.color);
+              if (!hsv) {
+                this.logHelper.warn('Recevied `ChangeLightState` event but ' +
+                  'unable to parse userdata.color.', userData.color);
+                break;
+              }
+
+              newState.hue = hsv.h;
+              newState.sat = hsv.s;
+              newState.bri = hsv.v;
+            }
+
+            this.setBulbState(bulbId, colorsHelper.validateValues(newState));
+            break;
+          }
+          case 'SimulateSunRise': {
+            if (!commandData || !commandData.userData) {
+              this.logHelper.warn('Recevied `SimulateSunRise` event without ' +
+                'userdata.');
+              break;
+            }
+
+            const userData = commandData.userData;
+            if (!userData.bulbName) {
+              this.logHelper.warn('Recevied `ChangeLightState` event without ' +
+                'userdata.bulbName.', userData);
+              break;
+            }
+
+            const bulbId = this.getBulbIdFromName(userData.bulbName);
+            if (!bulbId) {
+              this.logHelper.warn('Recevied `SimulateSunRise` event with an ' +
+                'invalid bulbName.', userData.bulbName);
+              break;
+            }
+
+            if (!bulbId) {
+              this.logHelper.log('Recevied `SimulateSunRise` event but the  ' +
+                'bulbName could not be resolved to a bulb ID: ', userData);
+              return;
+            }
+
+            this.simulateSunRise(bulbId);
+            break;
+          }
+          default:
+            this.logHelper.warn(`Unknown Command Event Received: ` +
+              `'${commandName}'`);
+            break;
+        }
+      });
+    })
+    .then(() => {
+      this.emitDeviceEvent('Connected', {
+        lights: this._lights,
+      });
+    });
   }
 
   getDetails() {
@@ -63,6 +195,30 @@ class HueHub extends RouteDevice {
     this._applyStateToAll({
       on: true,
     });
+  }
+
+  simulateSunRise(bulbId) {
+    const totalSteps = 500;
+    const totalDuration = 20 * 60 * 1000;
+    const stepDuration = totalDuration / totalSteps;
+
+    let currentStep = 0;
+    const intervalId = setInterval(() => {
+      const increment = currentStep / totalSteps;
+      const newState = {
+        on: true,
+        bri: increment * 1.0,
+        colorTemp: (0.5 - increment/2),
+      };
+      this.setBulbState(bulbId, colorsHelper.validateValues(newState));
+
+      this.logHelper.log('Changing bulb state to: ', newState);
+
+      currentStep++;
+      if(currentStep >= 500) {
+        clearInterval(intervalId);
+      }
+    }, stepDuration);
   }
 
   _applyStateToAll(newState) {
@@ -133,11 +289,6 @@ class HueHub extends RouteDevice {
     return this._registerWithHub()
     .then(() => {
       return this._updateLightsList();
-    })
-    .then(() => {
-      this.emitDeviceEvent('Connected', {
-        lights: this._lights,
-      });
     });
   }
 
