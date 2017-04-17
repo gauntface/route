@@ -1,6 +1,6 @@
 {
   "name": "routoh-device-local-spotify",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "",
   "main": "local-spotify.js",
   "author": "",
