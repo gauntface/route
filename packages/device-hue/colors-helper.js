@@ -76,8 +76,6 @@ class ColorsHelper {
       newState.ct = Math.round(154 + (1.0 - newState.colorTemp) * 346);
     }
 
-    console.log(newState);
-
     return newState;
   }
 }

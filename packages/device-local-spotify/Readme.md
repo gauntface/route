@@ -18,3 +18,10 @@ spotifyDevice.playPlaylist(SPOTIFY_ALARM_PLAYLIST);
 // Some time later....
 spotifyDevice.stop();
 ```
+# Install
+
+Install the dependencies:
+
+    sudo apt-get install mopidy mopidy-spotify
+
+Set up config file at `~/.config/mopidy/mopidy.conf`.

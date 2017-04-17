@@ -32,16 +32,135 @@ class HueHub extends RouteDevice {
   }
 
   init() {
-    let bridgeConnectionPromise;
     if (this._bridgeAddress) {
-      bridgeConnectionPromise = this._addBridge(this._bridgeAddress);
+      this._addBridge(this._bridgeAddress);
     } else {
-      bridgeConnectionPromise = this._scanForBridges();
+      this._scanForBridges();
+    }
+  }
+
+  getDetails() {
+    if (!this._bridgeAddress || !this._username) {
+      return null;
     }
 
-    return bridgeConnectionPromise.then(() => {
+    return {
+      address: this._bridgeAddress,
+      username: this._username,
+    };
+  }
+
+  getLights() {
+    return this._lights;
+  }
+
+  allOff() {
+    this._applyStateToAll({
+      on: false,
+    });
+  }
+
+  allOn() {
+    this._applyStateToAll({
+      on: true,
+    });
+  }
+
+  simulateSunRise(bulbId) {
+    const totalSteps = 500;
+    const totalDuration = 20 * 60 * 1000;
+    const stepDuration = totalDuration / totalSteps;
+
+    let currentStep = 0;
+    const intervalId = setInterval(() => {
+      const increment = currentStep / totalSteps;
+      const newState = {
+        on: true,
+        bri: increment * 1.0,
+        colorTemp: (0.5 - increment/2),
+      };
+      this.setBulbState(bulbId, colorsHelper.validateValues(newState));
+
+      this.logHelper.log('Changing bulb state to: ', newState);
+
+      currentStep++;
+      if(currentStep >= 500) {
+        clearInterval(intervalId);
+      }
+    }, stepDuration);
+  }
+
+  _applyStateToAll(newState) {
+    Object.keys(this._lights).forEach((lightId) => {
+      this.setBulbState(lightId, newState);
+    });
+  }
+
+  _scanForBridges() {
+    const discoveredIps = [];
+    const ssdpClient = new ssdp.Client();
+    ssdpClient.on('response', (headers, statusCode, rinfo) => {
+      const host = rinfo.address;
+      if (discoveredIps.indexOf(host) !== -1) {
+        // Already seen this IP
+        return;
+      }
+
+      // Mark IP as found
+      discoveredIps.push(host);
+
+      const location = headers['LOCATION'];
+
+      fetch(location)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Resposne was not 200.');
+        }
+
+        return response.text();
+      })
+      .then((response) => {
+        const parser = new xml2js.Parser();
+        return new Promise((resolve, reject) => {
+          parser.parseString(response, (err, result) => {
+            if (err) {
+              return reject(err);
+            }
+            resolve(result);
+          });
+        });
+      })
+      .then((parsedResponse) => {
+        const modelName = parsedResponse.root.device[0].modelName[0];
+        const isHue = modelName.indexOf('Philips hue bridge') !== -1;
+        if (isHue) {
+          this._addBridge(host);
+        }
+      })
+      .catch((err) => {
+        this.logHelper.error('Unable to query devices description: ', err);
+      });
+    });
+    ssdpClient.search('upnp:rootdevice');
+  }
+
+  _addBridge(bridgeAddress) {
+    if (this._bridgeAddress && this._bridgeAddress !== bridgeAddress) {
+      this.logHelper.error('New bridge found but bridge address already ' +
+        'defined');
+      return;
+    }
+
+    this._bridgeAddress = bridgeAddress;
+
+    this.logHelper.log(`Found hue bridge @ ${this._bridgeAddress}`);
+
+    return this._registerWithHub()
+    .then(() => {
+      return this._updateLightsList();
+    })
+    .then(() => {
       this.addListener('CommandEvent', ({commandName, commandData}) => {
-        console.log('Received Command Event......');
         switch(commandName) {
           case 'AllOn': {
             this.allOn();
@@ -167,128 +286,6 @@ class HueHub extends RouteDevice {
       this.emitDeviceEvent('Connected', {
         lights: this._lights,
       });
-    });
-  }
-
-  getDetails() {
-    if (!this._bridgeAddress || !this._username) {
-      return null;
-    }
-
-    return {
-      address: this._bridgeAddress,
-      username: this._username,
-    };
-  }
-
-  getLights() {
-    return this._lights;
-  }
-
-  allOff() {
-    this._applyStateToAll({
-      on: false,
-    });
-  }
-
-  allOn() {
-    this._applyStateToAll({
-      on: true,
-    });
-  }
-
-  simulateSunRise(bulbId) {
-    const totalSteps = 500;
-    const totalDuration = 20 * 60 * 1000;
-    const stepDuration = totalDuration / totalSteps;
-
-    let currentStep = 0;
-    const intervalId = setInterval(() => {
-      const increment = currentStep / totalSteps;
-      const newState = {
-        on: true,
-        bri: increment * 1.0,
-        colorTemp: (0.5 - increment/2),
-      };
-      this.setBulbState(bulbId, colorsHelper.validateValues(newState));
-
-      this.logHelper.log('Changing bulb state to: ', newState);
-
-      currentStep++;
-      if(currentStep >= 500) {
-        clearInterval(intervalId);
-      }
-    }, stepDuration);
-  }
-
-  _applyStateToAll(newState) {
-    Object.keys(this._lights).forEach((lightId) => {
-      this.setBulbState(lightId, newState);
-    });
-  }
-
-  _scanForBridges() {
-    const discoveredIps = [];
-    const ssdpClient = new ssdp.Client();
-    ssdpClient.on('response', (headers, statusCode, rinfo) => {
-      const host = rinfo.address;
-      if (discoveredIps.indexOf(host) !== -1) {
-        // Already seen this IP
-        return;
-      }
-
-      // Mark IP as found
-      discoveredIps.push(host);
-
-      const location = headers['LOCATION'];
-
-      fetch(location)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Resposne was not 200.');
-        }
-
-        return response.text();
-      })
-      .then((response) => {
-        const parser = new xml2js.Parser();
-        return new Promise((resolve, reject) => {
-          parser.parseString(response, (err, result) => {
-            if (err) {
-              return reject(err);
-            }
-            resolve(result);
-          });
-        });
-      })
-      .then((parsedResponse) => {
-        const modelName = parsedResponse.root.device[0].modelName[0];
-        const isHue = modelName.indexOf('Philips hue bridge') !== -1;
-        if (isHue) {
-          this._addBridge(host);
-        }
-      })
-      .catch((err) => {
-        this.logHelper.error('Unable to query devices description: ', err);
-      });
-    });
-    ssdpClient.search('upnp:rootdevice');
-  }
-
-  _addBridge(bridgeAddress) {
-    if (this._bridgeAddress && this._bridgeAddress !== bridgeAddress) {
-      this.logHelper.error('New bridge found but bridge address already ' +
-        'defined');
-      return;
-    }
-
-    this._bridgeAddress = bridgeAddress;
-
-    this.logHelper.log(`Found hue bridge @ ${this._bridgeAddress}`);
-
-    return this._registerWithHub()
-    .then(() => {
-      return this._updateLightsList();
     });
   }
 
