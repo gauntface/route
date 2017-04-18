@@ -81,8 +81,6 @@ class HueHub extends RouteDevice {
       };
       this.setBulbState(bulbId, colorsHelper.validateValues(newState));
 
-      this.logHelper.log('Changing bulb state to: ', newState);
-
       currentStep++;
       if(currentStep >= 500) {
         clearInterval(intervalId);
