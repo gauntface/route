@@ -1,0 +1,12 @@
+{
+  "name": "routoh-device-hs1xx",
+  "version": "0.0.24",
+  "description": "",
+  "main": "hs1xx.js",
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "hs100-api": "^0.7.0",
+    "routoh": "^0.0.21"
+  }
+}
